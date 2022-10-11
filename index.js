@@ -55,30 +55,56 @@ const drumBank = [
   }
 ];
 
+
 // Define parent component App (to host & render drumpads)
 const App = () => {
   return (
-    <div className="bg-secondary bg-opacity-75 min-vh-100 text-center text-white">
+    <div className="bg-secondary bg-opacity-75 min-vh-100 text-center">
       <h2>Drum Machine</h2>
-      <div id="display" className="bg-secondary text-center">
-        {/* Generate (& return) array of HTML DrumPad elements from drumBank elements */}
-        {drumBank.map((audioClip) => (
-          <DrumPad key={audioClip.id} audioClip={audioClip} />
+      <div id="display" className="bg-secondary text-center">Inner text of #display element is HERE. It should be replace with drumBank-id string when a .drum-pad is triggered
+        {/* For each drumBank object, create a drumPad element & pass-in the drumBank object */}
+        {/* Each child in a list should have a unique "key" prop */}
+        {drumBank.map((props) => (
+          <DrumPad props={props} key={props.keyCode} id={props.id} />
         ))}
       </div>
     </div>
   );
 }
 
-// Define child component, DrumPad (designs DrumPad & play sound onClick)
-const DrumPad = (props) => {
+// Define child component, DrumPad (designs DrumPad & plays sound onClick)
+// Use object destructuring lest it will just be props. Lookup \"Pass an Array as Props 4.19"
+const DrumPad = ({props}) => {
+
+  // Add event listener to play sound at keypress event
+  // Use React.useEffect method to add/enable lifecycle methods to functional component. Courtesy: Landon Schlangen
+  React.useEffect(() => {
+    document.addEventListener("keydown", handlyKeyPress);
+    return () => {
+      document.removeEventListener("keydown", handlyKeyPress);
+    }
+  }, []);
+
+  // use "e" to represent event
+  const handlyKeyPress = (e) => {
+    if (e.keyCode === props.keyCode) {
+      playSound();
+    }
+  }
+
+  // .drum-pad onClick event handler (playSound)
+  const playSound = () => {
+    const drumSound = document.getElementById(props.keyTrigger);
+    drumSound.play();
+  }
+
   return (
-    <div className="drum-pad btn btn-info p-4 m-3 text-white">{props.keyTrigger} 
-      <audio className="clip" id={"props.keyTrigger"} src={"props.url"}/>
+    <div className="drum-pad btn btn-info p-4 m-3" id={props.id} onClick={playSound}>
+      <h3>{props.keyTrigger}</h3>
+      <audio className="clip" src={props.url} id={props.keyTrigger} />
     </div>
   );
 }
-
 
 // Render App component to html container
 const container = document.getElementById('drum-machine');
