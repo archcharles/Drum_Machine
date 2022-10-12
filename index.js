@@ -55,18 +55,21 @@ const drumBank = [
   }
 ];
 
-
 // Define parent component App (to host & render drumpads)
 const App = () => {
+  const [textValue, setTextValue] = React.useState("");
+
   return (
     <div className="bg-secondary bg-opacity-75 min-vh-100 text-center">
       <h2>Drum Machine</h2>
-      <div id="display" className="bg-secondary text-center">Inner text of #display element is HERE. It should be replace with drumBank-id string when a .drum-pad is triggered
+      <div id="display" className="bg-secondary text-center">
         {/* For each drumBank object, create a drumPad element & pass-in the drumBank object */}
         {/* Each child in a list should have a unique "key" prop */}
         {drumBank.map((props) => (
           <DrumPad props={props} key={props.keyCode} id={props.id} />
         ))}
+        <br/>
+        <p id="audioClipName" className="fw-bold text-white"></p>
       </div>
     </div>
   );
@@ -75,15 +78,16 @@ const App = () => {
 // Define child component, DrumPad (designs DrumPad & plays sound onClick)
 // Use object destructuring lest it will just be props. Lookup \"Pass an Array as Props 4.19"
 const DrumPad = ({props}) => {
+  // Add active state - setActive action to DrumPad element. Use React.useState hook to define & track state
+  const [active, setActive] = React.useState(false);
 
-  // Add event listener to play sound at keypress event
-  // Use React.useEffect method to add/enable lifecycle methods to functional component. Courtesy: Landon Schlangen
+  // Add event listener to play sound at keypress event. Use React.useEffect hook to add lifecycle methods. Tnx: Landon Schlangen
   React.useEffect(() => {
     document.addEventListener("keydown", handlyKeyPress);
     return () => {
       document.removeEventListener("keydown", handlyKeyPress);
     }
-  }, []);
+  });
 
   // use "e" to represent event
   const handlyKeyPress = (e) => {
@@ -92,14 +96,20 @@ const DrumPad = ({props}) => {
     }
   }
 
-  // .drum-pad onClick event handler (playSound)
+  // .drum-pad onClick event handler (plays sound. update & timeout active state of .drum-pad)
   const playSound = () => {
     const drumSound = document.getElementById(props.keyTrigger);
     drumSound.play();
+    // blink when .drum-pad is active
+    setActive(true);
+    setTimeout(() => setActive(false), 200);
+    // Display string describing the associated audio clip when a .drum-pad is triggered
+    document.getElementById("audioClipName").innerHTML = props.id
   }
 
   return (
-    <div className="drum-pad btn btn-info p-4 m-3" id={props.id} onClick={playSound}>
+    // RECAL: Enclose string in backticks defines Template literals. This enables string interpolation (to insert variable in a string)
+    <div className={`drum-pad btn btn-info p-4 m-3 text-white ${active && 'btn-warning'}`} id={props.id} onClick={playSound}>
       <h3>{props.keyTrigger}</h3>
       <audio className="clip" src={props.url} id={props.keyTrigger} />
     </div>
@@ -110,5 +120,4 @@ const DrumPad = ({props}) => {
 const container = document.getElementById('drum-machine');
 const root = ReactDOM.createRoot(container);
 root.render(<App />);
-
 // ReactDOM.render(<App/>, document.getElementById('drum-machine'));
